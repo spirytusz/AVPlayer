@@ -8,7 +8,6 @@
 #include <thread>
 #include <queue>
 #include "log.h"
-#include "jni_util.h"
 #include "DecoderStatus.h"
 
 extern "C" {
