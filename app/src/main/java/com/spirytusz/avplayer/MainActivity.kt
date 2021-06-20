@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         avPlayer.init()
+        avPlayer.prepare("http://ivi.bupt.edu.cn/hls/cctv1hd.m3u8")
         binding.sampleText.text = AVPlayer.getFFmpegVersion()
         avPlayer.release()
     }

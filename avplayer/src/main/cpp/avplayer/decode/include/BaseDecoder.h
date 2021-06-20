@@ -3,11 +3,13 @@
 #define AVPLAYER_BASEDECODER_H
 
 #include "IDecoder.h"
-#include "jni.h"
 #include <string>
 #include <pthread.h>
+#include <thread>
+#include <queue>
 #include "log.h"
 #include "jni_util.h"
+#include "DecoderStatus.h"
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -19,11 +21,7 @@ extern "C" {
 class BaseDecoder : public IDecoder {
 private:
 
-    const char* TAG = "BaseDecoder";
-
-    JavaVM *jvm = nullptr;
-
-    jobject g_surface = nullptr;
+    const char *TAG = "BaseDecoder";
 
     AVFormatContext *av_format_ctx = nullptr;
 
@@ -31,55 +29,48 @@ private:
 
     AVCodecContext *av_codec_ctx = nullptr;
 
-    AVPacket *av_packet = nullptr;
-
-    AVFrame *av_frame = nullptr;
-
-    long current_t_s = -1;
-
-    long duration = -1;
+    std::queue<AVPacket*> av_packet_queue;
 
     int stream_index = -1;
 
-    std::string url = nullptr;
+    DecodeState decoder_status = IDLE;
 
     pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
-    void Init(JNIEnv *env, jstring url);
+    void FindTargetStream();
+
+    void FindDecoder();
+
+    void InitDecodeThread();
+
+    virtual AVMediaType GetMediaType() = 0;
+    virtual char * GetPrintMediaType() = 0;
+
+    static void Decode(BaseDecoder* that);
+
+    void Free();
+
+protected:
+    long current_t_ms = -1;
+
+    long duration = -1;
 
 public:
-    BaseDecoder(JNIEnv *env, jstring url);
+    BaseDecoder(AVFormatContext *context);
+    ~BaseDecoder();
+
+    void Init();
 
     void Start() override;
 
-    void Pause() override;
+    void Push(AVPacket* av_packet) override;
 
-    void Reset() override;
-
-    bool IsDecoding() override;
+    void Release() override;
 
     long GetCurrentPosition() override;
 
     long GetDuration() override;
-
-    void setSurface(jobject surface) {
-        JNIEnv *env = nullptr;
-        int result = GetEnv(jvm, &env);
-        if (result == JNI_OK) {
-            this->g_surface = env->NewGlobalRef(surface);
-        } else {
-            LOGE(TAG, "set surface error");
-        }
-    }
-
-    int Width() {
-        return av_codec_ctx->width;
-    }
-
-    int Height() {
-        return av_codec_ctx->height;
-    }
 };
 
 #endif //AVPLAYER_BASEDECODER_H

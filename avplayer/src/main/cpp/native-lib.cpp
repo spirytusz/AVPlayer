@@ -1,6 +1,7 @@
 #include <jni.h>
 #include <string>
 #include <AVPlayer.h>
+#include <thread>
 
 extern "C" {
 #include <libavutil/avutil.h>
@@ -12,38 +13,38 @@ jstring getFFmpegVersion(JNIEnv *env, jclass clazz) {
 }
 
 jlong init(JNIEnv *env, jobject object) {
-    return (jlong) new AVPlayer();
+    return (jlong) new AVPlayer(env, object);
 }
 
 void prepare(JNIEnv *env, jobject object, jlong ptr, jstring uri) {
     auto av_player = static_cast<AVPlayer *>((void *) ptr);
-    av_player->prepare("");
+    av_player->Prepare(env->GetStringUTFChars(uri, nullptr));
 }
 
 void play(JNIEnv *env, jobject object, jlong ptr) {
     auto av_player = static_cast<AVPlayer *>((void *) ptr);
-    av_player->play();
+    av_player->Play();
 }
 
 void pause(JNIEnv *env, jobject object, jlong ptr) {
     auto av_player = static_cast<AVPlayer *>((void *) ptr);
-    av_player->pause();
+    av_player->Pause();
 }
 
 void reset(JNIEnv *env, jobject object, jlong ptr) {
     auto av_player = static_cast<AVPlayer *>((void *) ptr);
-    av_player->reset();
+    av_player->Reset();
 }
 
 void release(JNIEnv *env, jobject object, jlong ptr) {
     auto av_player = static_cast<AVPlayer *>((void *) ptr);
-    av_player->release();
+    av_player->Release();
     delete av_player;
 }
 
 jboolean isPlaying(JNIEnv *env, jobject object, jlong ptr) {
     auto av_player = static_cast<AVPlayer *>((void *) ptr);
-    return av_player->isPlaying();
+    return av_player->IsPlaying();
 }
 
 static JNINativeMethod gMethods[] = {

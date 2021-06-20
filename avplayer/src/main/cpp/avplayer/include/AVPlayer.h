@@ -3,20 +3,52 @@
 #define AVPLAYER_AVPLAYER_H
 
 #include <string>
+#include "jni.h"
+#include "log.h"
+#include <thread>
+#include "BaseDecoder.h"
+#include "AudioDecoder.h"
+#include "VideoDecoder.h"
+
+extern "C" {
+#include <libavformat/avformat.h>
+};
 
 class AVPlayer {
+private:
+
+    const char *TAG = "NativeAVPlayer";
+
+    AVFormatContext *av_format_context = nullptr;
+
+    JavaVM *javaVm = nullptr;
+    jobject j_object = nullptr;
+    const char* datasource_url;
+
+    VideoDecoder* video_decoder = nullptr;
+    AudioDecoder* audio_decoder = nullptr;
+
+    pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+
+    static void PrepareBackground(AVPlayer* that);
+
 public:
-    void prepare(std::string url);
+    AVPlayer(JNIEnv *env, jobject object);
 
-    void play();
+    ~AVPlayer();
 
-    void pause();
+    void Prepare(const char* url);
 
-    bool isPlaying();
+    void Play();
 
-    void reset();
+    void Pause();
 
-    void release();
+    bool IsPlaying();
+
+    void Reset();
+
+    void Release();
 };
 
 

@@ -2,6 +2,10 @@
 #ifndef AVPLAYER_IDECODER_H
 #define AVPLAYER_IDECODER_H
 
+extern "C" {
+#include <libavcodec/packet.h>
+};
+
 class IDecoder {
 public:
     /**
@@ -10,19 +14,15 @@ public:
     virtual void Start() = 0;
 
     /**
-     * 暂停解码
+     * 释放解码器
      */
-    virtual void Pause() = 0;
+    virtual void Release() = 0;
 
     /**
-     * 重置解码器
+     * 推入封装数据
+     * @param av_packet 封装数据
      */
-    virtual void Reset() = 0;
-
-    /**
-     * 是否解码中
-     */
-    virtual bool IsDecoding() = 0;
+    virtual void Push(AVPacket* av_packet) = 0;
 
     /**
      * 获取pts

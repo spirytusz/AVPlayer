@@ -22,6 +22,10 @@ class AVPlayer {
         Log.d(TAG, "init() >>> ptr=$nativePlayerPtr")
     }
 
+    fun prepare(url: String) {
+        nativePrepare(nativePlayerPtr, url);
+    }
+
     fun release() {
         nativeRelease(nativePlayerPtr)
         Log.d(TAG, "release() >>> ptr=$nativePlayerPtr")
