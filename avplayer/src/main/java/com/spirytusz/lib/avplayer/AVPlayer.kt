@@ -44,6 +44,14 @@ class AVPlayer {
         Log.d(TAG, "release() >>> ptr=$nativePlayerPtr")
     }
 
+    fun play() {
+        nativePlay(nativePlayerPtr);
+    }
+
+    fun pause() {
+        nativePause(nativePlayerPtr)
+    }
+
     /**
      * will be called by native
      */

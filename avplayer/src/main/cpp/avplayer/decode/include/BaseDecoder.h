@@ -32,10 +32,12 @@ private:
 
     int stream_index = -1;
 
-    DecodeState decoder_status = IDLE;
+    DecodeStatus decoder_status = IDLE;
 
     pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+
+    pthread_mutex_t decoder_status_lock = PTHREAD_MUTEX_INITIALIZER;
 
     void FindTargetStream();
 
@@ -43,10 +45,11 @@ private:
 
     void InitDecodeThread();
 
-    virtual AVMediaType GetMediaType() = 0;
-    virtual char * GetPrintMediaType() = 0;
-
     static void Decode(BaseDecoder* that);
+
+    void SetDecoderState(DecodeStatus status);
+
+    DecodeStatus GetDecoderStatus();
 
     void Free();
 
@@ -63,6 +66,8 @@ public:
 
     void Start() override;
 
+    void Pause() override;
+
     void Push(AVPacket* av_packet) override;
 
     void Release() override;
@@ -70,6 +75,11 @@ public:
     long GetCurrentPosition() override;
 
     long GetDuration() override;
+
+    int GetStreamIndex();
+
+    virtual AVMediaType GetMediaType() = 0;
+    virtual char * GetPrintMediaType() = 0;
 };
 
 #endif //AVPLAYER_BASEDECODER_H

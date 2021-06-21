@@ -15,12 +15,12 @@ void BaseDecoder::InitDecodeThread() {
 }
 
 void BaseDecoder::Decode(BaseDecoder *that) {
-    that->decoder_status = START;
+    that->SetDecoderState(START);
     LOGI(that->TAG, "start decode");
 
     while (true) {
         pthread_mutex_lock(&that->mutex);
-        if (that->decoder_status == STOP) {
+        if (that->GetDecoderStatus() == STOP) {
             pthread_mutex_unlock(&that->mutex);
             break;
         }
@@ -33,15 +33,29 @@ void BaseDecoder::Decode(BaseDecoder *that) {
     }
 }
 
+void BaseDecoder::SetDecoderState(DecodeStatus status) {
+    pthread_mutex_lock(&decoder_status_lock);
+    decoder_status = status;
+    pthread_mutex_unlock(&decoder_status_lock);
+}
+
+DecodeStatus BaseDecoder::GetDecoderStatus() {
+    DecodeStatus current_decoder_status = IDLE;
+    pthread_mutex_lock(&decoder_status_lock);
+    current_decoder_status = decoder_status;
+    pthread_mutex_unlock(&decoder_status_lock);
+    return current_decoder_status;
+}
+
 void BaseDecoder::Init() {
-    decoder_status = PREPARE;
+    SetDecoderState(PREPARE);
     FindTargetStream();
     FindDecoder();
-    if (decoder_status == ERROR) {
+    if (GetDecoderStatus() == ERROR) {
         Free();
         return;
     }
-    decoder_status = READY;
+    SetDecoderState(READY);
 }
 
 void BaseDecoder::FindTargetStream() {
@@ -56,7 +70,7 @@ void BaseDecoder::FindTargetStream() {
 
     if (index < 0) {
         LOGE(TAG, "can not find stream for media type %s", GetPrintMediaType());
-        decoder_status = ERROR;
+        SetDecoderState(ERROR);
         return;
     }
     stream_index = index;
@@ -64,7 +78,7 @@ void BaseDecoder::FindTargetStream() {
 }
 
 void BaseDecoder::FindDecoder() {
-    if (decoder_status == ERROR) {
+    if (GetDecoderStatus() == ERROR) {
         return;
     }
 
@@ -72,7 +86,7 @@ void BaseDecoder::FindDecoder() {
     av_codec_ctx = avcodec_alloc_context3(av_codec);
     if (!av_codec_ctx) {
         LOGE(TAG, "can not alloc codec context");
-        decoder_status = ERROR;
+        SetDecoderState(ERROR);
         return;
     }
 
@@ -81,7 +95,7 @@ void BaseDecoder::FindDecoder() {
     av_codec = avcodec_find_decoder(codec_param->codec_id);
     if (!av_codec_ctx) {
         LOGE(TAG, "can not find decoder for codec_id %d", codec_param->codec_id);
-        decoder_status = ERROR;
+        SetDecoderState(ERROR);
         return;
     }
 
@@ -89,7 +103,7 @@ void BaseDecoder::FindDecoder() {
     int ret = avcodec_parameters_to_context(av_codec_ctx, codec_param);
     if (ret) {
         LOGE(TAG, "can not obtain codec context");
-        decoder_status = ERROR;
+        SetDecoderState(ERROR);
         return;
     }
 
@@ -97,7 +111,7 @@ void BaseDecoder::FindDecoder() {
     ret = avcodec_open2(av_codec_ctx, av_codec, nullptr);
     if (ret < 0) {
         LOGE(TAG, "can not open codec");
-        decoder_status = ERROR;
+        SetDecoderState(ERROR);
         return;
     }
 
@@ -118,7 +132,12 @@ void BaseDecoder::Start() {
     InitDecodeThread();
 }
 
+void BaseDecoder::Pause() {
+    SetDecoderState(PAUSE);
+}
+
 void BaseDecoder::Push(AVPacket *av_packet) {
+    LOGD(TAG, "Push Packet %s", GetPrintMediaType());
     pthread_mutex_lock(&mutex);
     av_packet_queue.push(av_packet);
     pthread_cond_signal(&cond);
@@ -127,7 +146,7 @@ void BaseDecoder::Push(AVPacket *av_packet) {
 
 void BaseDecoder::Release() {
     pthread_mutex_lock(&mutex);
-    decoder_status = STOP;
+    SetDecoderState(STOP);
     pthread_mutex_unlock(&mutex);
     Free();
 }
@@ -138,4 +157,8 @@ long BaseDecoder::GetCurrentPosition() {
 
 long BaseDecoder::GetDuration() {
     return duration;
+}
+
+int BaseDecoder::GetStreamIndex() {
+    return stream_index;
 }

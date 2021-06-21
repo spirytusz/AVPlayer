@@ -14,6 +14,11 @@ public:
     virtual void Start() = 0;
 
     /**
+     * 暂停解码
+     */
+    virtual void Pause() = 0;
+
+    /**
      * 释放解码器
      */
     virtual void Release() = 0;

@@ -9,6 +9,7 @@
 #include "BaseDecoder.h"
 #include "AudioDecoder.h"
 #include "VideoDecoder.h"
+#include "../dispatcher/include/PacketDispatcher.h"
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -29,6 +30,7 @@ private:
 
     VideoDecoder *video_decoder = nullptr;
     AudioDecoder *audio_decoder = nullptr;
+    PacketDispatcher *packet_dispatcher = nullptr;
 
     pthread_t prepare_tid;
 

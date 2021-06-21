@@ -1,5 +1,6 @@
 package com.spirytusz.avplayer
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -25,14 +26,37 @@ class MainActivity : AppCompatActivity(), OnPreparedListener {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        initView()
+        initListener()
+
         avPlayer.init()
-        avPlayer.onPreparedListener = this
         avPlayer.prepare("http://ivi.bupt.edu.cn/hls/cctv1hd.m3u8")
-        binding.sampleText.text = AVPlayer.getFFmpegVersion()
-        //avPlayer.release()
+    }
+
+
+    @SuppressLint("SetTextI18n")
+    private fun initView() {
+        binding.sampleText.text = "FFmpeg Version ${AVPlayer.getFFmpegVersion()}"
+    }
+
+    private fun initListener() {
+        avPlayer.onPreparedListener = this
+
+        binding.play.setOnClickListener {
+            avPlayer.play()
+        }
+
+        binding.pause.setOnClickListener {
+            avPlayer.pause()
+        }
+
+        binding.release.setOnClickListener {
+            avPlayer.release()
+        }
     }
 
     override fun onPrepared(avPlayer: AVPlayer) {
         Log.d(TAG, "onPrepared")
+        binding.play.isEnabled = true
     }
 }

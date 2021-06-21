@@ -10,7 +10,6 @@ class AudioDecoder : public BaseDecoder {
 public:
     AudioDecoder(AVFormatContext *context);
 
-private:
     AVMediaType GetMediaType() override {
         return AVMEDIA_TYPE_AUDIO;
     }
@@ -18,6 +17,7 @@ private:
     char* GetPrintMediaType() override {
         return "AVMEDIA_TYPE_AUDIO";
     }
+
 };
 
 

@@ -67,11 +67,17 @@ void AVPlayer::RealPrepareBackground() {
     // 初始化音频解码器
     audio_decoder = new AudioDecoder(av_format_context);
     audio_decoder->Init();
-    // 初始化视频解码器
 
+    // 初始化视频解码器
     video_decoder = new VideoDecoder(av_format_context);
     video_decoder->Init();
     sendNativeMessage(CODE_PREPARED, "");
+
+    // 初始化封装数据分发器
+    std::vector<BaseDecoder*> decoders;
+    decoders.push_back(audio_decoder);
+    decoders.push_back(video_decoder);
+    packet_dispatcher = new PacketDispatcher(av_format_context, decoders);
 }
 
 void AVPlayer::Play() {
@@ -81,11 +87,22 @@ void AVPlayer::Play() {
     if (video_decoder) {
         video_decoder->Start();
     }
+    if (packet_dispatcher) {
+        packet_dispatcher->Start();
+    }
 }
 
 
 void AVPlayer::Pause() {
-
+    if (audio_decoder) {
+        audio_decoder->Pause();
+    }
+    if (video_decoder) {
+        video_decoder->Pause();
+    }
+    if (packet_dispatcher) {
+        packet_dispatcher->Pause();
+    }
 }
 
 bool AVPlayer::IsPlaying() {
