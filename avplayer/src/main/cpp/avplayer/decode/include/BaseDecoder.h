@@ -20,8 +20,6 @@ extern "C" {
 class BaseDecoder : public IDecoder {
 private:
 
-    const char *TAG = "BaseDecoder";
-
     AVFormatContext *av_format_ctx = nullptr;
 
     AVCodec *av_codec = nullptr;
@@ -78,8 +76,9 @@ public:
 
     int GetStreamIndex();
 
+    virtual const char* LogSpec() = 0;
     virtual AVMediaType GetMediaType() = 0;
-    virtual char * GetPrintMediaType() = 0;
+    virtual const char * GetPrintMediaType() = 0;
 };
 
 #endif //AVPLAYER_BASEDECODER_H

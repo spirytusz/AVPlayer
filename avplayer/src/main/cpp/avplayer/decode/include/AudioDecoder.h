@@ -10,11 +10,15 @@ class AudioDecoder : public BaseDecoder {
 public:
     AudioDecoder(AVFormatContext *context);
 
+    const char* LogSpec() override {
+        return "AudioDecoder";
+    }
+
     AVMediaType GetMediaType() override {
         return AVMEDIA_TYPE_AUDIO;
     }
 
-    char* GetPrintMediaType() override {
+    const char* GetPrintMediaType() override {
         return "AVMEDIA_TYPE_AUDIO";
     }
 

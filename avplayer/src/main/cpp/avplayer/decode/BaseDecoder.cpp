@@ -16,7 +16,7 @@ void BaseDecoder::InitDecodeThread() {
 
 void BaseDecoder::Decode(BaseDecoder *that) {
     that->SetDecoderState(START);
-    LOGI(that->TAG, "start decode");
+    LOGI(that->LogSpec(), "start decode");
 
     while (true) {
         pthread_mutex_lock(&that->mutex);
@@ -69,12 +69,12 @@ void BaseDecoder::FindTargetStream() {
     }
 
     if (index < 0) {
-        LOGE(TAG, "can not find stream for media type %s", GetPrintMediaType());
+        LOGE(LogSpec(), "can not find stream for media type %s", GetPrintMediaType());
         SetDecoderState(ERROR);
         return;
     }
     stream_index = index;
-    LOGI(TAG, "media_type=%s stream_index=%d", GetPrintMediaType(), stream_index);
+    LOGI(LogSpec(), "media_type=%s stream_index=%d", GetPrintMediaType(), stream_index);
 }
 
 void BaseDecoder::FindDecoder() {
@@ -85,7 +85,7 @@ void BaseDecoder::FindDecoder() {
     // 为解码器上下文分配空间
     av_codec_ctx = avcodec_alloc_context3(av_codec);
     if (!av_codec_ctx) {
-        LOGE(TAG, "can not alloc codec context");
+        LOGE(LogSpec(), "can not alloc codec context");
         SetDecoderState(ERROR);
         return;
     }
@@ -94,7 +94,7 @@ void BaseDecoder::FindDecoder() {
     AVCodecParameters *codec_param = av_format_ctx->streams[stream_index]->codecpar;
     av_codec = avcodec_find_decoder(codec_param->codec_id);
     if (!av_codec_ctx) {
-        LOGE(TAG, "can not find decoder for codec_id %d", codec_param->codec_id);
+        LOGE(LogSpec(), "can not find decoder for codec_id %d", codec_param->codec_id);
         SetDecoderState(ERROR);
         return;
     }
@@ -102,7 +102,7 @@ void BaseDecoder::FindDecoder() {
     // 初始化解码器上下文
     int ret = avcodec_parameters_to_context(av_codec_ctx, codec_param);
     if (ret) {
-        LOGE(TAG, "can not obtain codec context");
+        LOGE(LogSpec(), "can not obtain codec context");
         SetDecoderState(ERROR);
         return;
     }
@@ -110,14 +110,14 @@ void BaseDecoder::FindDecoder() {
     // 打开解码器
     ret = avcodec_open2(av_codec_ctx, av_codec, nullptr);
     if (ret < 0) {
-        LOGE(TAG, "can not open codec");
+        LOGE(LogSpec(), "can not open codec");
         SetDecoderState(ERROR);
         return;
     }
 
     // 获取时长
     duration = (long) ((float) av_format_ctx->duration / AV_TIME_BASE * 1000);
-    LOGI(TAG, "duration=%ld", duration);
+    LOGI(LogSpec(), "duration=%ld", duration);
 }
 
 void BaseDecoder::Free() {
@@ -137,7 +137,7 @@ void BaseDecoder::Pause() {
 }
 
 void BaseDecoder::Push(AVPacket *av_packet) {
-    LOGD(TAG, "Push Packet %s", GetPrintMediaType());
+    LOGD(LogSpec(), "Push Packet size = %d, media_type=%s", av_packet->size, GetPrintMediaType());
     pthread_mutex_lock(&mutex);
     av_packet_queue.push(av_packet);
     pthread_cond_signal(&cond);
