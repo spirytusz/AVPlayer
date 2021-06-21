@@ -5,15 +5,16 @@ import android.os.Looper
 import android.os.Message
 import android.util.Log
 import androidx.annotation.AnyThread
+import com.spirytusz.lib.avplayer.AVPlayerCode.MessageType.NATIVE_MESSAGE
+import com.spirytusz.lib.avplayer.AVPlayerCode.Prepared.CODE_PREPARED
+import com.spirytusz.lib.avplayer.AVPlayerCode.isErrorCode
+import com.spirytusz.lib.avplayer.callback.OnErrorListener
 import com.spirytusz.lib.avplayer.callback.OnPreparedListener
 
 class AVPlayer {
 
     companion object {
         private const val TAG = "AVPlayer"
-
-        private const val NATIVE_MESSAGE = 0
-        private const val CODE_PREPARED = 1
 
         init {
             System.loadLibrary("native-lib")
@@ -24,6 +25,7 @@ class AVPlayer {
     }
 
     var onPreparedListener: OnPreparedListener? = null
+    var onErrorListener: OnErrorListener? = null
 
     private var nativePlayerPtr = 0L
     private val avPlayHandler by lazy {
@@ -66,8 +68,11 @@ class AVPlayer {
     }
 
     private fun handleNativeMessage(nativeMessage: NativeMessage) {
-        when (nativeMessage.code) {
-            CODE_PREPARED -> {
+        when {
+            isErrorCode(nativeMessage.code) -> {
+                onErrorListener?.onError(this, nativeMessage.code, nativeMessage.msg)
+            }
+            nativeMessage.code == CODE_PREPARED -> {
                 onPreparedListener?.onPrepared(this)
             }
         }

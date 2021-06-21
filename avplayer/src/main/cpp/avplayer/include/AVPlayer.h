@@ -20,7 +20,10 @@ private:
 
     const char *TAG = "NativeAVPlayer";
 
+    const int CODE_ERROR_BEGIN = 0xFFF0;
+
     const int CODE_PREPARED = 1;
+    const int PREPARED_ERROR = CODE_ERROR_BEGIN + 1;
 
     AVFormatContext *av_format_context = nullptr;
 

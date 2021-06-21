@@ -6,9 +6,10 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.spirytusz.avplayer.databinding.ActivityMainBinding
 import com.spirytusz.lib.avplayer.AVPlayer
+import com.spirytusz.lib.avplayer.callback.OnErrorListener
 import com.spirytusz.lib.avplayer.callback.OnPreparedListener
 
-class MainActivity : AppCompatActivity(), OnPreparedListener {
+class MainActivity : AppCompatActivity(), OnPreparedListener, OnErrorListener {
 
     companion object {
         private const val TAG = "MainActivity"
@@ -41,6 +42,7 @@ class MainActivity : AppCompatActivity(), OnPreparedListener {
 
     private fun initListener() {
         avPlayer.onPreparedListener = this
+        avPlayer.onErrorListener = this
 
         binding.play.setOnClickListener {
             avPlayer.play()
@@ -58,5 +60,9 @@ class MainActivity : AppCompatActivity(), OnPreparedListener {
     override fun onPrepared(avPlayer: AVPlayer) {
         Log.d(TAG, "onPrepared")
         binding.play.isEnabled = true
+    }
+
+    override fun onError(avPlayer: AVPlayer, code: Int, msg: String) {
+        Log.e(TAG, "onError code=$code, msg=$msg")
     }
 }

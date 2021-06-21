@@ -37,6 +37,7 @@ void AVPlayer::RealPrepareBackground() {
     av_format_context = avformat_alloc_context();
     if (!av_format_context) {
         LOGE(TAG, "avformat_alloc_context failed");
+        sendNativeMessage(PREPARED_ERROR, "avformat_alloc_context failed");
         return;
     }
 
@@ -53,6 +54,7 @@ void AVPlayer::RealPrepareBackground() {
     );
     av_dict_free(&dictionary);
     if (ret) {
+        sendNativeMessage(PREPARED_ERROR, "avformat_alloc_context failed");
         LOGE(TAG, "avformat_open_input failed by ret=%d", ret);
         return;
     }
@@ -60,6 +62,7 @@ void AVPlayer::RealPrepareBackground() {
     // 寻找流信息
     ret = avformat_find_stream_info(av_format_context, nullptr);
     if (ret < 0) {
+        sendNativeMessage(PREPARED_ERROR, "avformat_find_stream_info failed");
         LOGE(TAG, "avformat_find_stream_info failed by ret=%d", ret);
         return;
     }
@@ -71,13 +74,29 @@ void AVPlayer::RealPrepareBackground() {
     // 初始化视频解码器
     video_decoder = new VideoDecoder(av_format_context);
     video_decoder->Init();
-    sendNativeMessage(CODE_PREPARED, "");
 
     // 初始化封装数据分发器
     std::vector<BaseDecoder*> decoders;
     decoders.push_back(audio_decoder);
     decoders.push_back(video_decoder);
     packet_dispatcher = new PacketDispatcher(av_format_context, decoders);
+
+    if (!audio_decoder) {
+        sendNativeMessage(PREPARED_ERROR, "can not create audio_decoder");
+        return;
+    }
+
+    if (!video_decoder) {
+        sendNativeMessage(PREPARED_ERROR, "can not create video_decoder");
+        return;
+    }
+
+    if (!packet_dispatcher) {
+        sendNativeMessage(PREPARED_ERROR, "can not create packet_dispatcher");
+        return;
+    }
+
+    sendNativeMessage(CODE_PREPARED, "");
 }
 
 void AVPlayer::Play() {
