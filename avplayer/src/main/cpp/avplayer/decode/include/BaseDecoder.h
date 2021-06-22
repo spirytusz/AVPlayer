@@ -32,10 +32,13 @@ private:
 
     DecodeStatus decoder_status = IDLE;
 
-    pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-    pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+    pthread_t decode_thread_tid = 0;
 
-    pthread_mutex_t decoder_status_lock = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_t av_packet_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_cond_t av_packet_queue_cond = PTHREAD_COND_INITIALIZER;
+
+    pthread_mutex_t decoder_status_mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_cond_t decoder_status_cond = PTHREAD_COND_INITIALIZER;
 
     void FindTargetStream();
 
@@ -43,7 +46,9 @@ private:
 
     void InitDecodeThread();
 
-    static void Decode(BaseDecoder* that);
+    static void* Decode(void* pVoid);
+
+    void RealDecode();
 
     void SetDecoderState(DecodeStatus status);
 

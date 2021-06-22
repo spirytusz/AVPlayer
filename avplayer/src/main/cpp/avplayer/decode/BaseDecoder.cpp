@@ -10,40 +10,67 @@ BaseDecoder::~BaseDecoder() {
 }
 
 void BaseDecoder::InitDecodeThread() {
-    std::thread t(Decode, this);
-    t.detach();
+    LOGD(LogSpec(), "send signal decoder_status_cond");
+    pthread_cond_signal(&decoder_status_cond);
+    SetDecoderState(START);
+    if (decode_thread_tid) {
+        LOGD("BaseDecoder", "%s already create thread, skip", LogSpec());
+        return;
+    }
+    LOGD("BaseDecoder", "%s create thread", LogSpec());
+    pthread_create(&decode_thread_tid, nullptr, Decode, this);
 }
 
-void BaseDecoder::Decode(BaseDecoder *that) {
-    that->SetDecoderState(START);
-    LOGI(that->LogSpec(), "start decode");
+void* BaseDecoder::Decode(void* pVoid) {
+    auto decoder = static_cast<BaseDecoder*>(pVoid);
+    decoder->RealDecode();
+    return nullptr;
+}
+
+void BaseDecoder::RealDecode() {
+    SetDecoderState(START);
+    LOGI(LogSpec(), "start decode");
 
     while (true) {
-        pthread_mutex_lock(&that->mutex);
-        if (that->GetDecoderStatus() == STOP) {
-            pthread_mutex_unlock(&that->mutex);
+        while (GetDecoderStatus() == PAUSE) {
+            pthread_mutex_lock(&decoder_status_mutex);
+            LOGD(LogSpec(), "wait signal decoder_status_cond");
+            pthread_cond_wait(&decoder_status_cond, &decoder_status_mutex);
+            LOGD(LogSpec(), "receive signal decoder_status_cond");
+            pthread_mutex_unlock(&decoder_status_mutex);
+        }
+
+        if (GetDecoderStatus() == STOP) {
             break;
         }
 
-        while (that->av_packet_queue.empty()) {
-            pthread_cond_wait(&that->cond, &that->mutex);
+        while (av_packet_queue.empty()) {
+            pthread_mutex_lock(&av_packet_queue_mutex);
+            pthread_cond_wait(&av_packet_queue_cond, &av_packet_queue_mutex);
+            pthread_mutex_unlock(&av_packet_queue_mutex);
         }
 
-        pthread_mutex_unlock(&that->mutex);
+        AVPacket* av_packet = av_packet_queue.front();
+        av_packet_queue.pop();
+        if (!av_packet) {
+            LOGW(LogSpec(), "invalid av_packet, skip");
+            continue;
+        }
+        LOGD(LogSpec(), "read av_packet size=%d", av_packet->size);
     }
 }
 
 void BaseDecoder::SetDecoderState(DecodeStatus status) {
-    pthread_mutex_lock(&decoder_status_lock);
+    pthread_mutex_lock(&decoder_status_mutex);
     decoder_status = status;
-    pthread_mutex_unlock(&decoder_status_lock);
+    pthread_mutex_unlock(&decoder_status_mutex);
 }
 
 DecodeStatus BaseDecoder::GetDecoderStatus() {
     DecodeStatus current_decoder_status = IDLE;
-    pthread_mutex_lock(&decoder_status_lock);
+    pthread_mutex_lock(&decoder_status_mutex);
     current_decoder_status = decoder_status;
-    pthread_mutex_unlock(&decoder_status_lock);
+    pthread_mutex_unlock(&decoder_status_mutex);
     return current_decoder_status;
 }
 
@@ -137,17 +164,16 @@ void BaseDecoder::Pause() {
 }
 
 void BaseDecoder::Push(AVPacket *av_packet) {
-    LOGD(LogSpec(), "Push Packet size = %d, media_type=%s", av_packet->size, GetPrintMediaType());
-    pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&av_packet_queue_mutex);
     av_packet_queue.push(av_packet);
-    pthread_cond_signal(&cond);
-    pthread_mutex_unlock(&mutex);
+    pthread_cond_signal(&av_packet_queue_cond);
+    pthread_mutex_unlock(&av_packet_queue_mutex);
 }
 
 void BaseDecoder::Release() {
-    pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&av_packet_queue_mutex);
     SetDecoderState(STOP);
-    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&av_packet_queue_mutex);
     Free();
 }
 
