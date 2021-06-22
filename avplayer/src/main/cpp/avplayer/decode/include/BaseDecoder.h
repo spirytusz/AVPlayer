@@ -40,6 +40,8 @@ private:
     pthread_mutex_t decoder_status_mutex = PTHREAD_MUTEX_INITIALIZER;
     pthread_cond_t decoder_status_cond = PTHREAD_COND_INITIALIZER;
 
+    IRender* m_render;
+
     void FindTargetStream();
 
     void FindDecoder();
@@ -72,6 +74,8 @@ public:
     void Pause() override;
 
     void Push(AVPacket* av_packet) override;
+
+    void SetRender(IRender* render) override;
 
     void Release() override;
 

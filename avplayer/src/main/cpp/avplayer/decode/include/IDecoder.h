@@ -2,6 +2,8 @@
 #ifndef AVPLAYER_IDECODER_H
 #define AVPLAYER_IDECODER_H
 
+#include <IRender.h>
+
 extern "C" {
 #include <libavcodec/packet.h>
 };
@@ -28,6 +30,8 @@ public:
      * @param av_packet 封装数据
      */
     virtual void Push(AVPacket* av_packet) = 0;
+
+    virtual void SetRender(IRender* render) = 0;
 
     /**
      * 获取pts

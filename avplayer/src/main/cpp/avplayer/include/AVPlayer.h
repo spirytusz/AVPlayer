@@ -9,7 +9,7 @@
 #include "BaseDecoder.h"
 #include "AudioDecoder.h"
 #include "VideoDecoder.h"
-#include "../dispatcher/include/PacketDispatcher.h"
+#include "PacketDispatcher.h"
 
 extern "C" {
 #include <libavformat/avformat.h>

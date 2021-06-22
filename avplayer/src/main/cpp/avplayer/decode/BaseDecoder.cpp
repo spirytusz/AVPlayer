@@ -57,6 +57,29 @@ void BaseDecoder::RealDecode() {
             continue;
         }
         LOGD(LogSpec(), "read av_packet size=%d", av_packet->size);
+
+        int ret = avcodec_send_packet(av_codec_ctx, av_packet);
+        if (ret) {
+            LOGW(LogSpec(), "avcodec_send_packet failed by %d", ret);
+            continue;
+        }
+
+        av_packet_free(&av_packet);
+
+        AVFrame* av_frame = av_frame_alloc();
+        ret = avcodec_receive_frame(av_codec_ctx, av_frame);
+        if (ret == AVERROR(EAGAIN)) {
+            LOGI(LogSpec(), "avcodec_receive_frame %s", av_err2str(AVERROR(EAGAIN)));
+            continue;
+        } else if (ret != 0) {
+            LOGD(LogSpec(), "avcodec_receive_frame %d", ret);
+            av_frame_free(&av_frame);
+            break;
+        }
+
+        if (m_render) {
+            m_render->Render(av_frame);
+        }
     }
 }
 
@@ -168,6 +191,10 @@ void BaseDecoder::Push(AVPacket *av_packet) {
     av_packet_queue.push(av_packet);
     pthread_cond_signal(&av_packet_queue_cond);
     pthread_mutex_unlock(&av_packet_queue_mutex);
+}
+
+void BaseDecoder::SetRender(IRender *render) {
+    m_render = render;
 }
 
 void BaseDecoder::Release() {
