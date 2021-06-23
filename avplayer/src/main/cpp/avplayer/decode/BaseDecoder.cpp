@@ -50,6 +50,10 @@ void BaseDecoder::RealDecode() {
             pthread_mutex_unlock(&av_packet_queue_mutex);
         }
 
+        if (GetDecoderStatus() == STOP) {
+            break;
+        }
+
         AVPacket* av_packet = av_packet_queue.front();
         av_packet_queue.pop();
         if (!av_packet) {
@@ -78,7 +82,7 @@ void BaseDecoder::RealDecode() {
         }
 
         if (m_render) {
-            m_render->Render(av_frame);
+            m_render->Render(av_frame, stream_index);
         }
     }
 }
@@ -195,6 +199,10 @@ void BaseDecoder::Push(AVPacket *av_packet) {
 
 void BaseDecoder::SetRender(IRender *render) {
     m_render = render;
+}
+
+bool BaseDecoder::IsDecoding() {
+    return GetDecoderStatus() == START;
 }
 
 void BaseDecoder::Release() {

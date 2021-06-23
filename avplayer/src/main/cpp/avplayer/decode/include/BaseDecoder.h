@@ -77,6 +77,8 @@ public:
 
     void SetRender(IRender* render) override;
 
+    bool IsDecoding() override;
+
     void Release() override;
 
     long GetCurrentPosition() override;

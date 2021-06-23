@@ -54,6 +54,10 @@ class AVPlayer {
         nativePause(nativePlayerPtr)
     }
 
+    fun isPlaying(): Boolean {
+        return nativeIsPlaying(nativePlayerPtr)
+    }
+
     /**
      * will be called by native
      */

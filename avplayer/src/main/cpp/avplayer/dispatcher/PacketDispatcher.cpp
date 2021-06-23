@@ -29,6 +29,10 @@ void PacketDispatcher::Stop() {
     SetStatus(DISPATCHER_STOP);
 }
 
+bool PacketDispatcher::IsDispatching() {
+    return GetStatus() == DISPATCHER_START;
+}
+
 void PacketDispatcher::Release() {}
 
 void *PacketDispatcher::DispatchRoutine(void *pVoid) {

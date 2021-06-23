@@ -31,7 +31,17 @@ public:
      */
     virtual void Push(AVPacket* av_packet) = 0;
 
+    /**
+     * 设置渲染器
+     * @param render 渲染器
+     */
     virtual void SetRender(IRender* render) = 0;
+
+    /**
+     * 是否在解码中
+     * @return 是否在解码中
+     */
+    virtual bool IsDecoding() = 0;
 
     /**
      * 获取pts

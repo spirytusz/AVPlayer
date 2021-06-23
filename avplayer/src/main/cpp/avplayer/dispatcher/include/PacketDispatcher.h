@@ -24,6 +24,8 @@ public:
 
     void Stop();
 
+    bool IsDispatching();
+
     void Release();
 
 private:
@@ -33,7 +35,7 @@ private:
 
     PacketDispatcherStatus packet_dispatcher_status;
 
-    pthread_t dispatcher_thread_tid;
+    pthread_t dispatcher_thread_tid = 0;
     pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 

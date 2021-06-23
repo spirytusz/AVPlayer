@@ -24,8 +24,8 @@ void AVPlayer::Prepare(const char *url) {
     pthread_create(&prepare_tid, nullptr, PrepareBackground, this);
 }
 
-void *AVPlayer::PrepareBackground(void* pVoid) {
-    auto av_player = static_cast<AVPlayer*>(pVoid);
+void *AVPlayer::PrepareBackground(void *pVoid) {
+    auto av_player = static_cast<AVPlayer *>(pVoid);
 
     av_player->RealPrepareBackground();
 
@@ -76,7 +76,7 @@ void AVPlayer::RealPrepareBackground() {
     video_decoder->Init();
 
     // 初始化封装数据分发器
-    std::vector<BaseDecoder*> decoders;
+    std::vector<BaseDecoder *> decoders;
     decoders.push_back(audio_decoder);
     decoders.push_back(video_decoder);
     packet_dispatcher = new PacketDispatcher(av_format_context, decoders);
@@ -125,6 +125,18 @@ void AVPlayer::Pause() {
 }
 
 bool AVPlayer::IsPlaying() {
+    if (!audio_decoder || !audio_decoder->IsDecoding()) {
+        LOGD(TAG, "audio_decoder not decoding");
+        return false;
+    }
+    if (!video_decoder || !video_decoder->IsDecoding()) {
+        LOGD(TAG, "video_decoder not decoding");
+        return false;
+    }
+    if (!packet_dispatcher || !packet_dispatcher->IsDispatching()) {
+        LOGD(TAG, "packet_dispatcher not dispatching");
+        return false;
+    }
     return true;
 }
 
