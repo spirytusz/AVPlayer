@@ -1,4 +1,4 @@
 
 #include "include/AudioRender.h"
 
-void AudioRender::Render(AVFrame *av_frame) {}
+void AudioRender::Render(void* frame, int stream_index) {}

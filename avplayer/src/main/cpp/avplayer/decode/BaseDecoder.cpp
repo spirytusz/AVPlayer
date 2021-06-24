@@ -81,8 +81,14 @@ void BaseDecoder::RealDecode() {
             break;
         }
 
-        if (m_render) {
-            m_render->Render(av_frame, stream_index);
+        void* decode_result = DecodeFrame(av_frame);
+        if (decode_result) {
+            LOGD("BaseDecoder", "decode_result=%ld", decode_result);
+        } else {
+            LOGD("BaseDecoder", "decode_result=nullptr");
+        }
+        if (m_render && decode_result) {
+            m_render->Render(decode_result, stream_index);
         }
     }
 }
@@ -109,6 +115,7 @@ void BaseDecoder::Init() {
         Free();
         return;
     }
+    InitInternal();
     SetDecoderState(READY);
 }
 

@@ -1,4 +1,4 @@
 
 #include "include/VideoRender.h"
 
-void VideoRender::Render(AVFrame* av_frame) {}
+void VideoRender::Render(void* frame, int stream_index) {}

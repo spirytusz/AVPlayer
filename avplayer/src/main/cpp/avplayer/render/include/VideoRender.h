@@ -6,7 +6,7 @@
 
 class VideoRender: public IRender {
 public:
-    void Render(AVFrame* av_frame) override;
+    void Render(void* frame, int stream_index) override;
 };
 
 

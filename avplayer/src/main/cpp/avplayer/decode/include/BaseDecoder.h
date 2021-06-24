@@ -22,10 +22,6 @@ private:
 
     AVFormatContext *av_format_ctx = nullptr;
 
-    AVCodec *av_codec = nullptr;
-
-    AVCodecContext *av_codec_ctx = nullptr;
-
     std::queue<AVPacket*> av_packet_queue;
 
     int stream_index = -1;
@@ -52,6 +48,8 @@ private:
 
     void RealDecode();
 
+    virtual void* DecodeFrame(AVFrame* av_frame) = 0;
+
     void SetDecoderState(DecodeStatus status);
 
     DecodeStatus GetDecoderStatus();
@@ -59,15 +57,25 @@ private:
     void Free();
 
 protected:
+    AVCodec *av_codec = nullptr;
+
+    AVCodecContext *av_codec_ctx = nullptr;
+
     long current_t_ms = -1;
 
     long duration = -1;
+
+    AVRational GetTimeBase() {
+        return av_format_ctx->streams[stream_index]->time_base;
+    }
 
 public:
     BaseDecoder(AVFormatContext *context);
     ~BaseDecoder();
 
     void Init();
+
+    virtual void InitInternal() = 0;
 
     void Start() override;
 

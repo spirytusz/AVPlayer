@@ -16,6 +16,7 @@ project("avplayer")
 
 include_directories(${CMAKE_SOURCE_DIR}/avplayer/include)
 include_directories(${CMAKE_SOURCE_DIR}/avplayer/decode/include)
+include_directories(${CMAKE_SOURCE_DIR}/avplayer/decode/data)
 include_directories(${CMAKE_SOURCE_DIR}/utils/include)
 include_directories(${CMAKE_SOURCE_DIR}/avplayer/dispatcher/include)
 include_directories(${CMAKE_SOURCE_DIR}/avplayer/render/include)
