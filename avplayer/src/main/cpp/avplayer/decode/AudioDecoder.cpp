@@ -13,6 +13,8 @@ void *AudioDecoder::DecodeFrame(AVFrame *av_frame) {
     }
     pcmData->pcm = m_out_buffer[0];
     pcmData->size = m_dest_data_size;
+    pcmData->stream_index = stream_index;
+    pcmData->pts = av_frame->best_effort_timestamp * av_q2d(GetTimeBase());
     return pcmData;
 }
 

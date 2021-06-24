@@ -81,6 +81,17 @@ void AVPlayer::RealPrepareBackground() {
     decoders.push_back(video_decoder);
     packet_dispatcher = new PacketDispatcher(av_format_context, decoders);
 
+    audio_render = new AudioRender();
+    if (audio_render && audio_decoder) {
+        audio_decoder->SetRender(audio_render);
+    }
+
+    // 视频渲染器
+    video_render = new VideoRender();
+    if (video_decoder && video_render) {
+        video_decoder->SetRender(video_render);
+    }
+
     if (!audio_decoder) {
         sendNativeMessage(PREPARED_ERROR, "can not create audio_decoder");
         return;

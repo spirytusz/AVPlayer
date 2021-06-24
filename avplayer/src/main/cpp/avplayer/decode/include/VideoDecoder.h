@@ -39,11 +39,15 @@ private:
     //显示的目标高
     int m_dst_h = 1920;
 
+    int fps = 0;
+
     void InitInternal() override;
 
     void InitSws();
 
     void InitBuffer();
+
+    void InitFps();
 
     void* DecodeFrame(AVFrame* av_frame) override;
 };

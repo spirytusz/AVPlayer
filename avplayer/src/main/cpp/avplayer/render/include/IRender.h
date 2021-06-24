@@ -4,7 +4,7 @@
 
 class IRender {
 public:
-    virtual void Render(void* frame, int stream_index) = 0;
+    virtual void Render(void* frame_data) = 0;
 };
 
 #endif //AVPLAYER_IRENDER_H

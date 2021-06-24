@@ -3,11 +3,15 @@
 #define AVPLAYER_AUDIORENDER_H
 
 #include "IRender.h"
+#include "log.h"
 
 class AudioRender: public IRender {
 
 public:
-    void Render(void* frame, int stream_index) override;
+    void Render(void* frame_data) override;
+
+private:
+    const char * TAG = "AudioRender";
 
 };
 

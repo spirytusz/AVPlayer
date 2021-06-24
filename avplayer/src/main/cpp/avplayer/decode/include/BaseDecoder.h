@@ -20,11 +20,7 @@ extern "C" {
 class BaseDecoder : public IDecoder {
 private:
 
-    AVFormatContext *av_format_ctx = nullptr;
-
     std::queue<AVPacket*> av_packet_queue;
-
-    int stream_index = -1;
 
     DecodeStatus decoder_status = IDLE;
 
@@ -57,6 +53,11 @@ private:
     void Free();
 
 protected:
+
+    int stream_index = -1;
+
+    AVFormatContext *av_format_ctx = nullptr;
+
     AVCodec *av_codec = nullptr;
 
     AVCodecContext *av_codec_ctx = nullptr;

@@ -4,17 +4,14 @@
 void *VideoDecoder::DecodeFrame(AVFrame *av_frame) {
     int ret = sws_scale(m_sws_ctx, av_frame->data, av_frame->linesize, 0,
                         av_codec_ctx->width, rgb_frame->data, rgb_frame->linesize);
-    if (ret <= 0) {
-        LOGD(LogSpec(), "sws_scale failed by %d", ret);
-        return nullptr;
-    } else {
-        LOGD(LogSpec(), "sws_scale success by %d", ret);
-    }
+    LOGD(LogSpec(), "sws_scale ret %d", ret);
     auto *rgba_data = new RGBAData();
     rgba_data->data = rgb_frame->data[0];
     rgba_data->line_size = rgb_frame->linesize[0];
-    rgba_data->pts = rgb_frame->pts;
+    rgba_data->pts = av_frame->best_effort_timestamp * av_q2d(GetTimeBase());
+    rgba_data->extra_delay = av_frame->repeat_pict * 1.0 / fps * 2.0;
     rgba_data->time_base = GetTimeBase();
+    rgba_data->stream_index = stream_index;
     LOGD(LogSpec(), "before sws_scale return");
     return rgba_data;
 }
@@ -22,6 +19,7 @@ void *VideoDecoder::DecodeFrame(AVFrame *av_frame) {
 void VideoDecoder::InitInternal() {
     InitSws();
     InitBuffer();
+    InitFps();
 }
 
 void VideoDecoder::InitSws() {
@@ -40,4 +38,9 @@ void VideoDecoder::InitBuffer() {
     // 将内存分配给RgbFrame，并将内存格式化为三个通道后，分别保存其地址
     av_image_fill_arrays(rgb_frame->data, rgb_frame->linesize,
                          m_buf_for_rgb_frame, AV_PIX_FMT_RGBA, m_dst_w, m_dst_h, 1);
+}
+
+void VideoDecoder::InitFps() {
+    fps = (int) av_q2d(av_format_ctx->streams[stream_index]->avg_frame_rate);
+    LOGD(LogSpec(), "fps=%d", fps);
 }

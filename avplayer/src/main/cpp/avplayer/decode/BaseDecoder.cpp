@@ -88,7 +88,7 @@ void BaseDecoder::RealDecode() {
             LOGD("BaseDecoder", "decode_result=nullptr");
         }
         if (m_render && decode_result) {
-            m_render->Render(decode_result, stream_index);
+            m_render->Render(decode_result);
         }
     }
 }

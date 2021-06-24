@@ -3,8 +3,9 @@
 #define AVPLAYER_PCMDATA_H
 
 #include <cstdint>
+#include "BaseFrameData.h"
 
-class PCMData {
+class PCMData: public BaseFrameData {
 public:
     uint8_t *pcm = nullptr;
     int size = -1;

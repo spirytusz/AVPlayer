@@ -6,6 +6,8 @@
 #include "jni.h"
 #include "log.h"
 #include <thread>
+#include <VideoRender.h>
+#include <AudioRender.h>
 #include "BaseDecoder.h"
 #include "AudioDecoder.h"
 #include "VideoDecoder.h"
@@ -35,9 +37,12 @@ private:
     AudioDecoder *audio_decoder = nullptr;
     PacketDispatcher *packet_dispatcher = nullptr;
 
+    VideoRender *video_render = nullptr;
+    AudioRender *audio_render = nullptr;
+
     pthread_t prepare_tid;
 
-    static void* PrepareBackground(void* pVoid);
+    static void *PrepareBackground(void *pVoid);
 
     void RealPrepareBackground();
 
