@@ -24,6 +24,14 @@ void AVPlayer::Prepare(const char *url) {
     pthread_create(&prepare_tid, nullptr, PrepareBackground, this);
 }
 
+void AVPlayer::SetSurfaceView(jobject g_surface) {
+    video_render = new VideoRender();
+    SetSurfaceToRender(g_surface);
+    if (video_decoder && video_render) {
+        video_decoder->SetRender(video_render);
+    }
+}
+
 void *AVPlayer::PrepareBackground(void *pVoid) {
     auto av_player = static_cast<AVPlayer *>(pVoid);
 
@@ -69,6 +77,10 @@ void AVPlayer::RealPrepareBackground() {
 
     // 初始化音频解码器
     audio_decoder = new AudioDecoder(av_format_context);
+    audio_render = new AudioRender();
+    if (audio_render && audio_decoder) {
+        audio_decoder->SetRender(audio_render);
+    }
     audio_decoder->Init();
 
     // 初始化视频解码器
@@ -80,17 +92,6 @@ void AVPlayer::RealPrepareBackground() {
     decoders.push_back(audio_decoder);
     decoders.push_back(video_decoder);
     packet_dispatcher = new PacketDispatcher(av_format_context, decoders);
-
-    audio_render = new AudioRender();
-    if (audio_render && audio_decoder) {
-        audio_decoder->SetRender(audio_render);
-    }
-
-    // 视频渲染器
-    video_render = new VideoRender();
-    if (video_decoder && video_render) {
-        video_decoder->SetRender(video_render);
-    }
 
     if (!audio_decoder) {
         sendNativeMessage(PREPARED_ERROR, "can not create audio_decoder");
@@ -114,8 +115,14 @@ void AVPlayer::Play() {
     if (audio_decoder) {
         audio_decoder->Start();
     }
+    if (audio_render) {
+        audio_render->Start();
+    }
     if (video_decoder) {
         video_decoder->Start();
+    }
+    if (video_render) {
+        video_render->Start();
     }
     if (packet_dispatcher) {
         packet_dispatcher->Start();
@@ -154,3 +161,31 @@ bool AVPlayer::IsPlaying() {
 void AVPlayer::Reset() {}
 
 void AVPlayer::Release() {}
+
+bool AVPlayer::SetSurfaceToRender(jobject surface) {
+    if (!surface) {
+        return false;
+    }
+
+    JNIEnv *env = nullptr;
+    bool try_attached = false;
+    int ret = javaVm->GetEnv((void **) &env, JNI_VERSION_1_6);
+    LOGD(TAG, "GetEnv %d", ret);
+    if (ret == JNI_EDETACHED) {
+        ret = javaVm->AttachCurrentThread(&env, nullptr);
+        try_attached = true;
+    }
+    if (ret != JNI_OK) {
+        LOGE(TAG, "can not attach to current thread! %d", ret);
+        sendNativeMessage(PREPARED_ERROR, "can not attach to current thread!");
+        return false;
+    }
+
+    if (video_render) {
+        video_render->SetSurface(env, surface);
+    }
+    if (try_attached) {
+        javaVm->DetachCurrentThread();
+    }
+    return true;
+}

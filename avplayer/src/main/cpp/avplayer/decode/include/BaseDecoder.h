@@ -32,8 +32,6 @@ private:
     pthread_mutex_t decoder_status_mutex = PTHREAD_MUTEX_INITIALIZER;
     pthread_cond_t decoder_status_cond = PTHREAD_COND_INITIALIZER;
 
-    IRender* m_render;
-
     void FindTargetStream();
 
     void FindDecoder();
@@ -62,6 +60,8 @@ protected:
 
     AVCodecContext *av_codec_ctx = nullptr;
 
+    IRender *m_render;
+
     long current_t_ms = -1;
 
     long duration = -1;
@@ -70,8 +70,11 @@ protected:
         return av_format_ctx->streams[stream_index]->time_base;
     }
 
+    virtual void AfterSetRender(IRender *render) = 0;
+
 public:
     BaseDecoder(AVFormatContext *context);
+
     ~BaseDecoder();
 
     void Init();

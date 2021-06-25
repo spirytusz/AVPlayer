@@ -26,6 +26,7 @@ private:
 
     const int CODE_PREPARED = 1;
     const int PREPARED_ERROR = CODE_ERROR_BEGIN + 1;
+    const int NOT_SET_SURFACE_PLAY_ERROR = CODE_ERROR_BEGIN + 2;
 
     AVFormatContext *av_format_context = nullptr;
 
@@ -46,15 +47,19 @@ private:
 
     void RealPrepareBackground();
 
+    bool SetSurfaceToRender(jobject surface);
+
     void sendNativeMessage(int code, const char *msg) {
         if (!javaVm) {
             return;
         }
         JNIEnv *env;
+        bool try_attached = false;
         int result = javaVm->GetEnv((void **) &env, JNI_VERSION_1_6);
         if (result == JNI_EDETACHED) {
             LOGI(TAG, "JNI_EDETACHED try to AttachCurrentThread");
             result = javaVm->AttachCurrentThread(&env, nullptr);
+            try_attached = true;
         }
         if (result != JNI_OK) {
             LOGE(TAG, "sendNativeMessage failed");
@@ -65,6 +70,9 @@ private:
         jmethodID method = env->GetMethodID(clazz, "messageBridge", "(ILjava/lang/String;)V");
         jstring j_msg = env->NewStringUTF(msg);
         env->CallVoidMethod(j_object, method, (jint) code, j_msg);
+        if (try_attached) {
+            javaVm->DetachCurrentThread();
+        }
     }
 
 public:
@@ -73,6 +81,8 @@ public:
     ~AVPlayer();
 
     void Prepare(const char *url);
+
+    void SetSurfaceView(jobject g_surface);
 
     void Play();
 

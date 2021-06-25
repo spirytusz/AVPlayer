@@ -4,6 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.Log
+import android.view.Surface
 import androidx.annotation.AnyThread
 import com.spirytusz.lib.avplayer.AVPlayerCode.MessageType.NATIVE_MESSAGE
 import com.spirytusz.lib.avplayer.AVPlayerCode.Prepared.CODE_PREPARED
@@ -58,6 +59,10 @@ class AVPlayer {
         return nativeIsPlaying(nativePlayerPtr)
     }
 
+    fun setSurface(surface: Surface) {
+        nativeSetSurface(nativePlayerPtr, surface)
+    }
+
     /**
      * will be called by native
      */
@@ -85,6 +90,8 @@ class AVPlayer {
     private external fun nativeInit(): Long
 
     private external fun nativePrepare(ptr: Long, uri: String)
+
+    private external fun nativeSetSurface(ptr: Long, surface: Surface)
 
     private external fun nativePlay(ptr: Long)
 

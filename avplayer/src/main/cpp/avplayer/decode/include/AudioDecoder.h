@@ -42,7 +42,7 @@ private:
     // 重采样以后，一帧数据的大小
     int m_dest_data_size = 0;
 
-    void* DecodeFrame(AVFrame* av_frame) override;
+    void *DecodeFrame(AVFrame *av_frame) override;
 
     void InitInternal() override;
 
@@ -51,6 +51,8 @@ private:
     void CalculateSampleArgs();
 
     void InitOutBuffer();
+
+    void AfterSetRender(IRender *render) override;
 };
 
 

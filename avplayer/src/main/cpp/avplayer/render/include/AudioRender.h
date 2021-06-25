@@ -8,7 +8,11 @@
 class AudioRender: public IRender {
 
 public:
-    void Render(void* frame_data) override;
+    void Start() override;
+
+    void Render(void *frame_data) override;
+
+    void Stop() override;
 
 private:
     const char * TAG = "AudioRender";

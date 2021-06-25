@@ -58,3 +58,5 @@ void AudioDecoder::CalculateSampleArgs() {
 void AudioDecoder::InitOutBuffer() {
     m_out_buffer[0] = (uint8_t *) malloc(m_dest_data_size);
 }
+
+void AudioDecoder::AfterSetRender(IRender *render) {}

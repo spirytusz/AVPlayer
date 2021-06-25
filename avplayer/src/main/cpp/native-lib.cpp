@@ -21,6 +21,12 @@ void prepare(JNIEnv *env, jobject object, jlong ptr, jstring uri) {
     av_player->Prepare(env->GetStringUTFChars(uri, nullptr));
 }
 
+void setSurface(JNIEnv *env, jobject object, jlong ptr, jobject surface) {
+    auto av_player = static_cast<AVPlayer *>((void *) ptr);
+    jobject g_surface = env->NewGlobalRef(surface);
+    av_player->SetSurfaceView(g_surface);
+}
+
 void play(JNIEnv *env, jobject object, jlong ptr) {
     auto av_player = static_cast<AVPlayer *>((void *) ptr);
     av_player->Play();
@@ -48,14 +54,15 @@ jboolean isPlaying(JNIEnv *env, jobject object, jlong ptr) {
 }
 
 static JNINativeMethod gMethods[] = {
-        {"getFFmpegVersion", "()Ljava/lang/String;",  (void *) getFFmpegVersion},
-        {"nativeInit",              "()J",                    (void *) init},
-        {"nativePrepare",           "(JLjava/lang/String;)V", (void *) prepare},
-        {"nativePlay",              "(J)V",                   (void *) play},
-        {"nativePause",             "(J)V",                   (void *) pause},
-        {"nativeIsPlaying",         "(J)Z",                   (void *) isPlaying},
-        {"nativeReset",             "(J)V",                   (void *) reset},
-        {"nativeRelease",           "(J)V",                   (void *) release}
+        {"getFFmpegVersion", "()Ljava/lang/String;",       (void *) getFFmpegVersion},
+        {"nativeInit",       "()J",                        (void *) init},
+        {"nativePrepare",    "(JLjava/lang/String;)V",     (void *) prepare},
+        {"nativeSetSurface", "(JLandroid/view/Surface;)V", (void *) setSurface},
+        {"nativePlay",       "(J)V",                       (void *) play},
+        {"nativePause",      "(J)V",                       (void *) pause},
+        {"nativeIsPlaying",  "(J)Z",                       (void *) isPlaying},
+        {"nativeReset",      "(J)V",                       (void *) reset},
+        {"nativeRelease",    "(J)V",                       (void *) release}
 };
 
 JNIEXPORT jint JNICALL

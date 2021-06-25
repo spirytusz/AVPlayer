@@ -4,6 +4,7 @@
 
 #include "BaseDecoder.h"
 #include <RGBAData.h>
+#include <VideoRender.h>
 
 extern "C" {
 #include <libswscale/swscale.h>
@@ -12,9 +13,9 @@ extern "C" {
 
 class VideoDecoder : public BaseDecoder {
 public:
-    VideoDecoder(AVFormatContext *context): BaseDecoder(context) {}
+    VideoDecoder(AVFormatContext *context) : BaseDecoder(context) {}
 
-    const char* LogSpec() override {
+    const char *LogSpec() override {
         return "VideoDecoder";
     }
 
@@ -22,22 +23,21 @@ public:
         return AVMEDIA_TYPE_VIDEO;
     }
 
-    const char* GetPrintMediaType() override {
+    const char *GetPrintMediaType() override {
         return "AVMEDIA_TYPE_VIDEO";
     }
 
 private:
-    uint8_t *m_buf_for_rgb_frame = NULL;
+
+    uint8_t *dst_data[4];
+    int dst_linesize[4];
 
     //视频格式转换器
     SwsContext *m_sws_ctx = NULL;
-    AVFrame* rgb_frame;
+    AVFrame *rgb_frame;
 
-    // TODO set by surface
-    //显示的目标宽
-    int m_dst_w = 1080;
-    //显示的目标高
-    int m_dst_h = 1920;
+    int m_dst_width = -1;
+    int m_dst_height = -1;
 
     int fps = 0;
 
@@ -49,7 +49,22 @@ private:
 
     void InitFps();
 
-    void* DecodeFrame(AVFrame* av_frame) override;
+    void *DecodeFrame(AVFrame *av_frame) override;
+
+    int VideoWidth() {
+        return av_codec_ctx->width;
+    }
+
+    int VideoHeight() {
+        return av_codec_ctx->height;
+    }
+
+    void SetDstSize(int dst_width, int dst_height) {
+        this->m_dst_width = dst_width;
+        this->m_dst_height = dst_height;
+    }
+
+    void AfterSetRender(IRender *render) override;
 };
 
 

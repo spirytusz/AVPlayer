@@ -3,16 +3,18 @@ package com.spirytusz.avplayer
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
+import android.view.SurfaceHolder
 import androidx.appcompat.app.AppCompatActivity
 import com.spirytusz.avplayer.databinding.ActivityMainBinding
 import com.spirytusz.lib.avplayer.AVPlayer
 import com.spirytusz.lib.avplayer.callback.OnErrorListener
 import com.spirytusz.lib.avplayer.callback.OnPreparedListener
 
-class MainActivity : AppCompatActivity(), OnPreparedListener, OnErrorListener {
+class MainActivity : AppCompatActivity(), OnPreparedListener, OnErrorListener,
+    SurfaceHolder.Callback {
 
     companion object {
-        private const val TAG = "MainActivity"
+        private const val TAG = "MainActivityTest"
     }
 
     private lateinit var binding: ActivityMainBinding
@@ -31,6 +33,7 @@ class MainActivity : AppCompatActivity(), OnPreparedListener, OnErrorListener {
         initListener()
 
         avPlayer.init()
+
         avPlayer.prepare("http://ivi.bupt.edu.cn/hls/cctv1hd.m3u8")
     }
 
@@ -59,10 +62,33 @@ class MainActivity : AppCompatActivity(), OnPreparedListener, OnErrorListener {
 
     override fun onPrepared(avPlayer: AVPlayer) {
         Log.d(TAG, "onPrepared")
-        binding.play.isEnabled = true
+        if (binding.surfaceView.holder.isCreating) {
+            binding.surfaceView.holder.addCallback(this)
+        } else {
+            avPlayer.setSurface(binding.surfaceView.holder.surface)
+            binding.play.isEnabled = true
+        }
     }
 
     override fun onError(avPlayer: AVPlayer, code: Int, msg: String) {
         Log.e(TAG, "onError code=$code, msg=$msg")
+    }
+
+    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+        Log.d(TAG, "surfaceChanged")
+    }
+
+    override fun surfaceDestroyed(holder: SurfaceHolder) {
+        Log.d(TAG, "surfaceDestroyed")
+    }
+
+    override fun surfaceCreated(holder: SurfaceHolder) {
+        Log.d(
+            TAG,
+            "surfaceCreated width=${binding.surfaceView.width} height=${binding.surfaceView.height}"
+        )
+        avPlayer.setSurface(holder.surface)
+
+        binding.play.isEnabled = true
     }
 }

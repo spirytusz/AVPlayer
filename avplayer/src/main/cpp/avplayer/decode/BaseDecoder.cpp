@@ -81,14 +81,14 @@ void BaseDecoder::RealDecode() {
             break;
         }
 
-        void* decode_result = DecodeFrame(av_frame);
-        if (decode_result) {
-            LOGD("BaseDecoder", "decode_result=%ld", decode_result);
-        } else {
-            LOGD("BaseDecoder", "decode_result=nullptr");
-        }
-        if (m_render && decode_result) {
-            m_render->Render(decode_result);
+        if (m_render) {
+            void *decode_result = DecodeFrame(av_frame);
+            if (decode_result) {
+                LOGD("BaseDecoder", "decode_result=%ld", decode_result);
+                m_render->Render(decode_result);
+            } else {
+                LOGD("BaseDecoder", "decode_result=nullptr");
+            }
         }
     }
 }
@@ -206,6 +206,7 @@ void BaseDecoder::Push(AVPacket *av_packet) {
 
 void BaseDecoder::SetRender(IRender *render) {
     m_render = render;
+    AfterSetRender(render);
 }
 
 bool BaseDecoder::IsDecoding() {
