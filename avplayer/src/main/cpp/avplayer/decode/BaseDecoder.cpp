@@ -60,7 +60,6 @@ void BaseDecoder::RealDecode() {
             LOGW(LogSpec(), "invalid av_packet, skip");
             continue;
         }
-        LOGD(LogSpec(), "read av_packet size=%d", av_packet->size);
 
         int ret = avcodec_send_packet(av_codec_ctx, av_packet);
         if (ret) {
@@ -84,7 +83,6 @@ void BaseDecoder::RealDecode() {
         if (m_render) {
             void *decode_result = DecodeFrame(av_frame);
             if (decode_result) {
-                LOGD("BaseDecoder", "decode_result=%ld", decode_result);
                 m_render->Render(decode_result);
             } else {
                 LOGD("BaseDecoder", "decode_result=nullptr");

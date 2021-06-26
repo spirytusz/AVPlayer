@@ -59,10 +59,6 @@ void PacketDispatcher::RealDispatch() {
 
         for (auto decoder : decoders) {
             if (decoder->GetStreamIndex() == av_packet->stream_index) {
-                LOGD(TAG, "Dispatch Packet stream_index=%d, media_type=%s",
-                     decoder->GetStreamIndex(),
-                     decoder->GetPrintMediaType()
-                );
                 decoder->Push(av_packet);
                 break;
             }

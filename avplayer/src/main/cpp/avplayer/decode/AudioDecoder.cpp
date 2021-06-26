@@ -8,8 +8,6 @@ void *AudioDecoder::DecodeFrame(AVFrame *av_frame) {
     if (ret <= 0) {
         LOGE(LogSpec(), "swr_convert failed by %d", ret);
         return nullptr;
-    } else {
-        LOGE(LogSpec(), "swr_convert success by %d", ret);
     }
     pcmData->pcm = m_out_buffer[0];
     pcmData->size = m_dest_data_size;
