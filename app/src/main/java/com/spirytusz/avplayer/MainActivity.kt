@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity(), OnPreparedListener, OnErrorListener,
 
         avPlayer.init()
 
-        avPlayer.prepare("http://ivi.bupt.edu.cn/hls/cctv1hd.m3u8")
+        avPlayer.prepare("http://220.161.87.62:8800/hls/0/index.m3u8")
     }
 
 
