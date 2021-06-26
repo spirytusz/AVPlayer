@@ -145,6 +145,12 @@ void AudioRender::RealRender() {
 void AudioRender::BlockingEnqueue(SLAndroidSimpleBufferQueueItf bq, void *pVoid) {
     auto audio_render = static_cast<AudioRender *>(pVoid);
 
+    while (!audio_render->frame_queue.empty() && audio_render->frame_queue.front()->used) {
+        auto pcm_data = audio_render->frame_queue.front();
+        delete pcm_data;
+        audio_render->frame_queue.pop();
+    }
+
     while (audio_render->frame_queue.empty()) {
         pthread_mutex_lock(&audio_render->mutex);
         pthread_cond_wait(&audio_render->cond, &audio_render->mutex);
@@ -154,6 +160,9 @@ void AudioRender::BlockingEnqueue(SLAndroidSimpleBufferQueueItf bq, void *pVoid)
     PCMData *pcm_data = audio_render->frame_queue.front();
     audio_render->frame_queue.pop();
     if (pcm_data->pcm && pcm_data->size) {
-        (*bq)->Enqueue(bq, pcm_data->pcm, pcm_data->size);
+        SLresult result = (*bq)->Enqueue(bq, pcm_data->pcm, pcm_data->size);
+        if (result == SL_RESULT_SUCCESS) {
+            pcm_data->used = true;
+        }
     }
 }

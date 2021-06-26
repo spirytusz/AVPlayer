@@ -33,6 +33,11 @@ void *VideoRender::RenderRoutine(void *pVoid) {
 
 void VideoRender::RealRender() {
     while (rendering) {
+        while (!frame_queue.empty() && frame_queue.front()->used) {
+            auto rgba_frame = frame_queue.front();
+            frame_queue.pop();
+            delete rgba_frame;
+        }
         while (frame_queue.empty()) {
             pthread_mutex_lock(&mutex);
             pthread_cond_wait(&cond, &mutex);
@@ -63,6 +68,7 @@ void VideoRender::RealRender() {
         for (int h = 0; h < m_out_buffer.height; h++) {
             memcpy(dst_data + h * dstStride, rgba_data->data + h * srcStride, dstStride);
         }
+        rgba_data->used = true;
         //释放窗口
         ANativeWindow_unlockAndPost(native_window);
     }
