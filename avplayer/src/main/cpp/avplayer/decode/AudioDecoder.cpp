@@ -3,6 +3,7 @@
 
 void *AudioDecoder::DecodeFrame(AVFrame *av_frame) {
     auto *pcmData = new PCMData();
+    InitOutBuffer();
     int ret = swr_convert(m_swr, m_out_buffer, m_dest_data_size / 2,
                           (const uint8_t **) av_frame->data, av_frame->nb_samples);
     if (ret <= 0) {
@@ -19,7 +20,6 @@ void *AudioDecoder::DecodeFrame(AVFrame *av_frame) {
 void AudioDecoder::InitInternal() {
     InitSwr();
     CalculateSampleArgs();
-    InitOutBuffer();
 }
 
 void AudioDecoder::InitSwr() {
