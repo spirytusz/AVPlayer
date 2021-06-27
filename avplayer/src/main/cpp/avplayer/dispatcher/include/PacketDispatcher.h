@@ -3,6 +3,7 @@
 #define AVPLAYER_PACKETDISPATCHER_H
 
 #include <vector>
+#include <map>
 #include <BaseDecoder.h>
 #include <log.h>
 #include "PacketDispatcherStatus.h"
@@ -14,7 +15,7 @@ extern "C" {
 class PacketDispatcher {
 
 public:
-    PacketDispatcher(AVFormatContext *context, std::vector<BaseDecoder *> decoders);
+    PacketDispatcher(AVFormatContext *context, const std::vector<BaseDecoder *> &decoders);
 
     ~PacketDispatcher();
 
@@ -31,7 +32,7 @@ public:
 private:
     const char *TAG = "PacketDispatcher";
     AVFormatContext *av_format_context;
-    std::vector<BaseDecoder *> decoders;
+    std::map<int, BaseDecoder *> map;
 
     PacketDispatcherStatus packet_dispatcher_status;
 

@@ -3,9 +3,12 @@
 
 #include <utility>
 
-PacketDispatcher::PacketDispatcher(AVFormatContext *context, std::vector<BaseDecoder *> decoders) {
+PacketDispatcher::PacketDispatcher(AVFormatContext *context,
+                                   const std::vector<BaseDecoder *> &decoders) {
     this->av_format_context = context;
-    this->decoders = std::move(decoders);
+    for (auto decoder: decoders) {
+        map[decoder->GetStreamIndex()] = decoder;
+    }
 
     SetStatus(DISPATCHER_IDLE);
 }
@@ -57,12 +60,7 @@ void PacketDispatcher::RealDispatch() {
             break;
         }
 
-        for (auto decoder : decoders) {
-            if (decoder->GetStreamIndex() == av_packet->stream_index) {
-                decoder->Push(av_packet);
-                break;
-            }
-        }
+        map[av_packet->stream_index]->Push(av_packet);
     }
 }
 
