@@ -35,7 +35,8 @@ add_library( # Sets the name of the library.
         avplayer/decode/VideoDecoder.cpp
         avplayer/dispatcher/PacketDispatcher.cpp
         avplayer/render/AudioRender.cpp
-        avplayer/render/VideoRender.cpp)
+        avplayer/render/VideoRender.cpp
+        avplayer/render/BaseRender.cpp)
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by

@@ -1,22 +1,9 @@
 
 #include "include/AudioRender.h"
 
-void AudioRender::Render(void *frame_data) {
-    pthread_mutex_lock(&mutex);
-    auto pcm_data = static_cast<PCMData *>(frame_data);
-    frame_queue.push(pcm_data);
-    pthread_cond_signal(&cond);
-    pthread_mutex_unlock(&mutex);
+void AudioRender::InitChild() {
+    InitSLEngine();
 }
-
-void AudioRender::Start() {
-    if (render_thread_tid) {
-        return;
-    }
-    pthread_create(&render_thread_tid, nullptr, RenderRoutine, this);
-}
-
-void AudioRender::Stop() {}
 
 void AudioRender::InitSLEngine() {
     SLresult result = slCreateEngine(
@@ -131,13 +118,6 @@ bool AudioRender::CheckResult(SLresult result, const char *tag) {
     return true;
 }
 
-void *AudioRender::RenderRoutine(void *pVoid) {
-    auto audio_render = static_cast<AudioRender *>(pVoid);
-    audio_render->InitSLEngine();
-    audio_render->RealRender();
-    return nullptr;
-}
-
 void AudioRender::RealRender() {
     BlockingEnqueue(bqPlayerBufferQueue, this);
 }
@@ -145,19 +125,20 @@ void AudioRender::RealRender() {
 void AudioRender::BlockingEnqueue(SLAndroidSimpleBufferQueueItf bq, void *pVoid) {
     auto audio_render = static_cast<AudioRender *>(pVoid);
 
-    while (!audio_render->frame_queue.empty() && audio_render->frame_queue.front()->used) {
-        auto pcm_data = audio_render->frame_queue.front();
+    while (!audio_render->frame_queue.empty() &&
+           static_cast<PCMData *>(audio_render->frame_queue.front())->used) {
+        auto pcm_data = static_cast<PCMData *>(audio_render->frame_queue.front());
         delete pcm_data;
         audio_render->frame_queue.pop();
     }
 
     while (audio_render->frame_queue.empty()) {
-        pthread_mutex_lock(&audio_render->mutex);
-        pthread_cond_wait(&audio_render->cond, &audio_render->mutex);
-        pthread_mutex_unlock(&audio_render->mutex);
+        audio_render->Lock();
+        audio_render->Wait();
+        audio_render->UnLock();
     }
 
-    PCMData *pcm_data = audio_render->frame_queue.front();
+    auto *pcm_data = static_cast<PCMData *>(audio_render->frame_queue.front());
     audio_render->frame_queue.pop();
     if (pcm_data->pcm && pcm_data->size) {
         SLresult result = (*bq)->Enqueue(bq, pcm_data->pcm, pcm_data->size);
