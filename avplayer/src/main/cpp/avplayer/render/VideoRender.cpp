@@ -27,6 +27,10 @@ void VideoRender::RealRender() {
         auto *rgba_data = static_cast<RGBAData *>(frame_queue.front());
         frame_queue.pop();
 
+        LOGD(TAG, "m_render_synchronizer=%ld", m_render_synchronizer);
+        if (m_render_synchronizer && m_render_synchronizer->Sync(rgba_data)) {
+            continue;
+        }
         ANativeWindow_setBuffersGeometry(native_window, window_width, window_height,
                                          WINDOW_FORMAT_RGBA_8888);
 

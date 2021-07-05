@@ -5,6 +5,7 @@
 #include "BaseDecoder.h"
 #include <RGBAData.h>
 #include <VideoRender.h>
+#include <ctime>
 
 extern "C" {
 #include <libswscale/swscale.h>

@@ -139,6 +139,11 @@ void AudioRender::BlockingEnqueue(SLAndroidSimpleBufferQueueItf bq, void *pVoid)
     }
 
     auto *pcm_data = static_cast<PCMData *>(audio_render->frame_queue.front());
+    auto synchronizer = audio_render->m_render_synchronizer;
+    LOGD(audio_render->TAG, "m_render_synchronizer=%ld", audio_render->m_render_synchronizer);
+    if (synchronizer && synchronizer->Sync(pcm_data)) {
+        return;
+    }
     audio_render->frame_queue.pop();
     if (pcm_data->pcm && pcm_data->size) {
         SLresult result = (*bq)->Enqueue(bq, pcm_data->pcm, pcm_data->size);

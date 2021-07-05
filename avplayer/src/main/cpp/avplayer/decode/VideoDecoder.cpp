@@ -14,6 +14,7 @@ void *VideoDecoder::DecodeFrame(AVFrame *av_frame) {
     rgba_data->extra_delay = av_frame->repeat_pict * 1.0 / fps * 2.0;
     rgba_data->time_base = GetTimeBase();
     rgba_data->stream_index = stream_index;
+    rgba_data->media_type = GetMediaType();
     return rgba_data;
 }
 

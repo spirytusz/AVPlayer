@@ -69,8 +69,9 @@ void BaseDecoder::RealDecode() {
 
         av_packet_free(&av_packet);
 
-        AVFrame* av_frame = av_frame_alloc();
+        AVFrame *av_frame = av_frame_alloc();
         ret = avcodec_receive_frame(av_codec_ctx, av_frame);
+        LOGD(LogSpec(), "avcodec_receive_frame %d", ret);
         if (ret == AVERROR(EAGAIN)) {
             LOGI(LogSpec(), "avcodec_receive_frame %s", av_err2str(AVERROR(EAGAIN)));
             continue;

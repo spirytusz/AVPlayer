@@ -38,6 +38,7 @@ private:
     AudioDecoder *audio_decoder = nullptr;
     PacketDispatcher *packet_dispatcher = nullptr;
 
+    RenderSynchronizer *render_synchronizer = nullptr;
     VideoRender *video_render = nullptr;
     AudioRender *audio_render = nullptr;
 

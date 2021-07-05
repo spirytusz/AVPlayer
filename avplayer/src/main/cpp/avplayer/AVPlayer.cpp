@@ -27,6 +27,9 @@ void AVPlayer::Prepare(const char *url) {
 void AVPlayer::SetSurfaceView(jobject g_surface) {
     video_render = new VideoRender();
     SetSurfaceToRender(g_surface);
+    if (render_synchronizer) {
+        video_render->SetSynchronizer(render_synchronizer);
+    }
     if (video_decoder && video_render) {
         video_decoder->SetRender(video_render);
     }
@@ -75,9 +78,11 @@ void AVPlayer::RealPrepareBackground() {
         return;
     }
 
+    render_synchronizer = new RenderSynchronizer();
     // 初始化音频解码器
     audio_decoder = new AudioDecoder(av_format_context);
     audio_render = new AudioRender();
+    audio_render->SetSynchronizer(render_synchronizer);
     if (audio_render && audio_decoder) {
         audio_decoder->SetRender(audio_render);
     }

@@ -6,6 +6,7 @@
 #include <queue>
 #include <pthread.h>
 #include "IRender.h"
+#include "RenderSynchronizer.h"
 
 class BaseRender : public IRender {
 public:
@@ -19,8 +20,14 @@ public:
         return rendering;
     }
 
+    void SetSynchronizer(RenderSynchronizer *render_synchronizer) {
+        m_render_synchronizer = render_synchronizer;
+    }
+
 protected:
     std::queue<void *> frame_queue;
+
+    RenderSynchronizer *m_render_synchronizer;
 
     void Lock() {
         pthread_mutex_lock(&mutex);
