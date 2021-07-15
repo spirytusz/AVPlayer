@@ -87,6 +87,7 @@ void BaseDecoder::RealDecode() {
             } else {
                 LOGD("BaseDecoder", "decode_result=nullptr");
             }
+            av_frame_free(&av_frame);
         }
     }
 }

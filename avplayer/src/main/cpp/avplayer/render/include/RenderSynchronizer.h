@@ -18,8 +18,8 @@ public:
 private:
     const char *TAG = "RenderSynchronizer";
 
-    int64_t audio_pts = 0;
-    int64_t video_pts = 0;
+    double audio_pts = 0;
+    double video_pts = 0;
 
     bool ReceiveAudioFrame(PCMData *pcm_data);
 
