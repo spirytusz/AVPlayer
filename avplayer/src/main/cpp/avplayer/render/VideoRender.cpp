@@ -11,11 +11,6 @@ void VideoRender::SetSurface(JNIEnv *env, jobject g_surface) {
 
 void VideoRender::RealRender() {
     while (Rendering()) {
-        while (!frame_queue.empty() && static_cast<RGBAData *>(frame_queue.front())->used) {
-            auto rgba_frame = static_cast<RGBAData *>(frame_queue.front());
-            frame_queue.pop();
-            delete rgba_frame;
-        }
         while (frame_queue.empty()) {
             Lock();
             Wait();
@@ -27,7 +22,6 @@ void VideoRender::RealRender() {
         auto *rgba_data = static_cast<RGBAData *>(frame_queue.front());
         frame_queue.pop();
 
-        LOGD(TAG, "m_render_synchronizer=%ld", m_render_synchronizer);
         if (m_render_synchronizer && m_render_synchronizer->Sync(rgba_data)) {
             continue;
         }
@@ -49,7 +43,6 @@ void VideoRender::RealRender() {
         for (int h = 0; h < m_out_buffer.height; h++) {
             memcpy(dst_data + h * dstStride, rgba_data->data + h * srcStride, dstStride);
         }
-        rgba_data->used = true;
         //释放窗口
         ANativeWindow_unlockAndPost(native_window);
     }
