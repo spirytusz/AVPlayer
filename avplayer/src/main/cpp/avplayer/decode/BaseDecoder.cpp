@@ -56,6 +56,10 @@ void BaseDecoder::RealDecode() {
 
         AVPacket* av_packet = av_packet_queue.front();
         av_packet_queue.pop();
+        if (av_packet_queue.size() == LIGHT_THRESHOLD) {
+            LOGD(LogSpec(), "BaseStreamAware OnLight");
+            stream_aware->OnLight();
+        }
         if (!av_packet) {
             LOGW(LogSpec(), "invalid av_packet, skip");
             continue;
@@ -199,6 +203,10 @@ void BaseDecoder::Pause() {
 void BaseDecoder::Push(AVPacket *av_packet) {
     pthread_mutex_lock(&av_packet_queue_mutex);
     av_packet_queue.push(av_packet);
+    if (av_packet_queue.size() == HEAVY_THRESHOLD) {
+        LOGD(LogSpec(), "BaseStreamAware OnHeavy");
+        stream_aware->OnHeavy();
+    }
     pthread_cond_signal(&av_packet_queue_cond);
     pthread_mutex_unlock(&av_packet_queue_mutex);
 }

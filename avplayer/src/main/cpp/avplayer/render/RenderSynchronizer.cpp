@@ -3,7 +3,6 @@
 
 bool RenderSynchronizer::Sync(void *frame_data) {
     auto base_frame_data = static_cast<BaseFrameData *>(frame_data);
-    //LOGD(TAG, "sync media_type=%s", base_frame_data->GetPrintMediaType());
     if (base_frame_data->media_type == AVMEDIA_TYPE_AUDIO) {
         return ReceiveAudioFrame(static_cast<PCMData *>(frame_data));
     } else if (base_frame_data->media_type == AVMEDIA_TYPE_VIDEO) {

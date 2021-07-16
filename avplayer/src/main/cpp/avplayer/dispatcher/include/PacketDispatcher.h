@@ -6,6 +6,7 @@
 #include <map>
 #include <BaseDecoder.h>
 #include <log.h>
+#include <BaseStreamAware.h>
 #include "PacketDispatcherStatus.h"
 
 extern "C" {
@@ -39,6 +40,9 @@ private:
     pthread_t dispatcher_thread_tid = 0;
     pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+
+    BaseStreamAware* video_stream_aware = nullptr;
+    BaseStreamAware* audio_stream_aware = nullptr;
 
     static void *DispatchRoutine(void *pVoid);
 

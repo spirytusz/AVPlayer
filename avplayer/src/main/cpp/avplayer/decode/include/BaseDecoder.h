@@ -7,6 +7,7 @@
 #include <pthread.h>
 #include <thread>
 #include <queue>
+#include <IStreamAware.h>
 #include "log.h"
 #include "DecoderStatus.h"
 
@@ -19,6 +20,9 @@ extern "C" {
 
 class BaseDecoder : public IDecoder {
 private:
+
+    const int HEAVY_THRESHOLD = 100;
+    const int LIGHT_THRESHOLD = 70;
 
     std::queue<AVPacket*> av_packet_queue;
 
@@ -102,6 +106,8 @@ public:
     virtual const char* LogSpec() = 0;
     virtual AVMediaType GetMediaType() = 0;
     virtual const char * GetPrintMediaType() = 0;
+
+    IStreamAware* stream_aware = nullptr;
 };
 
 #endif //AVPLAYER_BASEDECODER_H

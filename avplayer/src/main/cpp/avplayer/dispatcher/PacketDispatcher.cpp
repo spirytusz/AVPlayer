@@ -5,11 +5,18 @@
 
 PacketDispatcher::PacketDispatcher(AVFormatContext *context,
                                    const std::vector<BaseDecoder *> &decoders) {
+    video_stream_aware = new BaseStreamAware("video_packet_dispatcher");
+    audio_stream_aware = new BaseStreamAware("audio_packet_dispatcher");
+
     this->av_format_context = context;
     for (auto decoder: decoders) {
+        if (decoder->GetMediaType() == AVMEDIA_TYPE_AUDIO) {
+            decoder->stream_aware = audio_stream_aware;
+        } else if (decoder->GetMediaType() == AVMEDIA_TYPE_VIDEO) {
+            decoder->stream_aware = video_stream_aware;
+        }
         map[decoder->GetStreamIndex()] = decoder;
     }
-
     SetStatus(DISPATCHER_IDLE);
 }
 
@@ -60,7 +67,14 @@ void PacketDispatcher::RealDispatch() {
             break;
         }
 
-        map[av_packet->stream_index]->Push(av_packet);
+        video_stream_aware->Quota();
+        auto decoder = map[av_packet->stream_index];
+        if (decoder->GetMediaType() == AVMEDIA_TYPE_AUDIO) {
+            audio_stream_aware->Quota();
+        } else if (decoder->GetMediaType() == AVMEDIA_TYPE_VIDEO) {
+            video_stream_aware->Quota();
+        }
+        decoder->Push(av_packet);
     }
 }
 

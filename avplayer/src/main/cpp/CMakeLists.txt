@@ -20,6 +20,7 @@ include_directories(${CMAKE_SOURCE_DIR}/avplayer/decode/data)
 include_directories(${CMAKE_SOURCE_DIR}/utils/include)
 include_directories(${CMAKE_SOURCE_DIR}/avplayer/dispatcher/include)
 include_directories(${CMAKE_SOURCE_DIR}/avplayer/render/include)
+include_directories(${CMAKE_SOURCE_DIR}/avplayer/stream/include)
 
 add_library( # Sets the name of the library.
         native-lib
@@ -37,7 +38,8 @@ add_library( # Sets the name of the library.
         avplayer/render/AudioRender.cpp
         avplayer/render/VideoRender.cpp
         avplayer/render/BaseRender.cpp
-        avplayer/render/RenderSynchronizer.cpp)
+        avplayer/render/RenderSynchronizer.cpp
+        avplayer/stream/BaseStreamAware.cpp)
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
